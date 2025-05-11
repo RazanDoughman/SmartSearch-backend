@@ -45,7 +45,7 @@ API_URL = (
 
 # (2) helper to call HF Inference API
 def embed_text(text: str) -> np.ndarray:
-    headers = {"Authorization": f"Bearer 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"}
+    headers = {"Authorization": f"Bearer {os.environ['HF_TOKEN']}"}
     payload = {"inputs": text}
     resp = requests.post(API_URL, headers=headers, json=payload)
     resp.raise_for_status()
