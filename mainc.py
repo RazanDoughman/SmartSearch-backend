@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
 import numpy as np
 import pandas as pd
 from scipy.spatial.distance import cosine
@@ -8,6 +8,7 @@ import re
 import random
 import os
 import pickle
+import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -18,7 +19,7 @@ TOP_K = 5
 EMBEDDING_CACHE = "sbert_embeddings_cache.pkl"
 
 # Load SBERT model (English)
-model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+# model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 
 # Load full dataset
 df = pd.read_excel("data_final.xlsx")
@@ -31,8 +32,28 @@ def detect_language(text):
     return 'en'
 
 # Get sentence embedding
-def embed_text(text):
-    return model.encode(text)
+# def embed_text(text):
+#     return model.encode(text)
+
+
+####### API HF TOKEN #######
+# (1) point at the HF inference endpoint for our model
+API_URL = (
+    "https://api-inference.huggingface.co/pipeline/feature-extraction/"
+    "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+)
+
+# (2) helper to call HF Inference API
+def embed_text(text: str) -> np.ndarray:
+    headers = {"Authorization": f"Bearer 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"}
+    payload = {"inputs": text}
+    resp = requests.post(API_URL, headers=headers, json=payload)
+    resp.raise_for_status()
+    out = resp.json()
+    # out is a list of token embeddings; we average them to get a sentence vector
+    arr = np.array(out)
+    return arr.mean(axis=0)
+
 
 # Precompute or load embeddings
 english_embeddings = []
