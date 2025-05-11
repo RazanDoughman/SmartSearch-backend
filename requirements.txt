@@ -1,0 +1,7 @@
+flask
+flask-cors
+pandas
+numpy
+scipy
+sentence-transformers==2.2.2
+huggingface_hub==0.10.1
